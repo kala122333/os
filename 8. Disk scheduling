@@ -1,0 +1,133 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+
+void sort(int a[], int n)
+{
+    int i, j, t;
+    for(i = 0; i < n-1; i++)
+        for(j = 0; j < n-i-1; j++)
+            if(a[j] > a[j+1])
+            {
+                t = a[j];
+                a[j] = a[j+1];
+                a[j+1] = t;
+            }
+}
+
+void SSTF(int a[], int n, int head)
+{
+    int visited[100] = {0}, i, j, min, index;
+    int current = head, movement = 0;
+
+    printf("\nSSTF: %d", head);
+
+    for(i = 0; i < n; i++)
+    {
+        min = 99999;
+        index = -1;
+
+        for(j = 0; j < n; j++)
+            if(!visited[j] && abs(a[j]-current) < min)
+            {
+                min = abs(a[j]-current);
+                index = j;
+            }
+
+        visited[index] = 1;
+        movement += abs(a[index]-current);
+        current = a[index];
+
+        printf(" -> %d", current);
+    }
+
+    printf("\nTotal Head Movement = %d\n", movement);
+}
+
+void SCAN(int a[], int n, int head, int size)
+{
+    int i, current = head, movement = 0;
+
+    sort(a, n);
+    printf("\nSCAN: %d", head);
+
+    for(i = 0; i < n; i++)
+        if(a[i] >= head)
+        {
+            movement += abs(a[i]-current);
+            current = a[i];
+            printf(" -> %d", current);
+        }
+
+    movement += abs((size-1)-current);
+    current = size-1;
+    printf(" -> %d", current);
+
+    for(i = n-1; i >= 0; i--)
+        if(a[i] < head)
+        {
+            movement += abs(a[i]-current);
+            current = a[i];
+            printf(" -> %d", current);
+        }
+
+    printf("\nTotal Head Movement = %d\n", movement);
+}
+
+void CLOOK(int a[], int n, int head)
+{
+    int i, current = head, movement = 0;
+
+    sort(a, n);
+    printf("\nC-LOOK: %d", head);
+
+    for(i = 0; i < n; i++)
+        if(a[i] >= head)
+        {
+            movement += abs(a[i]-current);
+            current = a[i];
+            printf(" -> %d", current);
+        }
+
+    for(i = 0; i < n; i++)
+        if(a[i] < head)
+        {
+            movement += abs(a[i]-current);
+            current = a[i];
+            printf(" -> %d", current);
+        }
+
+    printf("\nTotal Head Movement = %d\n", movement);
+}
+
+int main()
+{
+    int a[100], n, head, size, i, choice;
+
+    printf("Enter number of requests: ");
+    scanf("%d", &n);
+
+    printf("Enter request queue: ");
+    for(i = 0; i < n; i++)
+        scanf("%d", &a[i]);
+
+    printf("Enter initial head position: ");
+    scanf("%d", &head);
+
+    printf("Enter total cylinders: ");
+    scanf("%d", &size);
+
+    printf("\n1. SSTF\n2. SCAN\n3. C-LOOK\n");
+    printf("Enter choice: ");
+    scanf("%d", &choice);
+
+    switch(choice)
+    {
+        case 1: SSTF(a, n, head); break;
+        case 2: SCAN(a, n, head, size); break;
+        case 3: CLOOK(a, n, head); break;
+        default: printf("Invalid choice");
+    }
+
+    return 0;
+}
