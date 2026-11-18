@@ -1,0 +1,66 @@
+
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <stdlib.h>
+
+int main()
+{
+    int p1[2], p2[2], fd;
+    pid_t pid;
+    char path[100], buffer[1024];
+    int n;
+
+    pipe(p1);
+    pipe(p2);
+
+    pid = fork();
+
+    if(pid > 0)
+    {
+        close(p1[0]);
+        close(p2[1]);
+
+        printf("Enter file pathname: ");
+        scanf("%99s", path);
+
+        write(p1[1], path, strlen(path) + 1);
+        close(p1[1]);
+
+        printf("\nFile contents:\n");
+
+        while((n = read(p2[0], buffer, sizeof(buffer))) > 0)
+            write(1, buffer, n);
+
+        close(p2[0]);
+        wait(NULL);
+    }
+    else if(pid == 0)
+    {
+        close(p1[1]);
+        close(p2[0]);
+
+        read(p1[0], path, sizeof(path));
+        close(p1[0]);
+
+        fd = open(path, O_RDONLY);
+
+        if(fd == -1)
+        {
+            perror("File opening failed");
+            close(p2[1]);
+            exit(1);
+        }
+
+        while((n = read(fd, buffer, sizeof(buffer))) > 0)
+            write(p2[1], buffer, n);
+
+        close(fd);
+        close(p2[1]);
+        exit(0);
+    }
+
+    return 0;
+}
