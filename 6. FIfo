@@ -1,0 +1,110 @@
+//Program 1
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <string.h>
+
+int main()
+{
+    char message[1000], result[1000] = {0};
+    int fd;
+
+    unlink("fifo1");
+    unlink("fifo2");
+
+    mkfifo("fifo1", 0666);
+    mkfifo("fifo2", 0666);
+
+    printf("Enter a sentence: ");
+    fgets(message, sizeof(message), stdin);
+
+    fd = open("fifo1", O_WRONLY);
+    write(fd, message, strlen(message));
+    close(fd);
+
+    fd = open("fifo2", O_RDONLY);
+    read(fd, result, sizeof(result) - 1);
+    close(fd);
+
+    printf("\nResult from second process:\n%s", result);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //Program 2
+    
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+#include <ctype.h>
+
+int main()
+{
+    char message[1000] = {0}, result[500] = {0};
+    int fd, characters = 0, words = 0, lines = 0;
+    int i, inword = 0;
+
+    fd = open("fifo1", O_RDONLY);
+    read(fd, message, sizeof(message) - 1);
+    close(fd);
+
+    for(i = 0; message[i] != '\0'; i++)
+    {
+        if(message[i] != '\n')
+            characters++;
+
+        if(message[i] == '\n')
+            lines++;
+
+        if(isspace((unsigned char)message[i]))
+            inword = 0;
+        else if(inword == 0)
+        {
+            words++;
+            inword = 1;
+        }
+    }
+
+    if(characters > 0 && (i == 0 || message[i-1] != '\n'))
+        lines++;
+
+    FILE *fp = fopen("result.txt", "w");
+
+    fprintf(fp, "Characters: %d\n", characters);
+    fprintf(fp, "Words: %d\n", words);
+    fprintf(fp, "Lines: %d\n", lines);
+
+    fclose(fp);
+
+    fp = fopen("result.txt", "r");
+    fread(result, 1, sizeof(result) - 1, fp);
+    fclose(fp);
+
+    fd = open("fifo2", O_WRONLY);
+    write(fd, result, strlen(result));
+    close(fd);
+
+    return 0;
+}
+
+
+    unlink("fifo1");
+    unlink("fifo2");
+
+    return 0;
+}
