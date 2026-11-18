@@ -1,0 +1,110 @@
+#!/bin/bash
+
+echo "Enter filename:"
+read -r filename
+
+while true
+do
+    echo ""
+    echo "----- ADDRESS BOOK -----"
+    echo "1. Create Address Book"
+    echo "2. View Address Book"
+    echo "3. Insert Record"
+    echo "4. Delete Record"
+    echo "5. Modify Record"
+    echo "6. Exit"
+
+    echo "Enter your choice:"
+    read -r choice
+
+    case $choice in
+
+    1)
+        touch "$filename"
+        echo "Address book created."
+        ;;
+
+    2)
+        if [ -f "$filename" ]; then
+            echo "Address Book Records:"
+            cat "$filename"
+        else
+            echo "Address book does not exist."
+        fi
+        ;;
+
+    3)
+        if [ -f "$filename" ]; then
+            echo "Enter employee ID:"
+            read -r empid
+
+            if awk -F '\t' -v id="$empid" '$1 == id {found=1} END {exit !found}' "$filename"; then
+                echo "Employee ID already exists."
+            else
+                echo "Enter employee name:"
+                read -r empname
+
+                echo "Enter employee city:"
+                read -r empcity
+
+                echo "Enter employee phone:"
+                read -r empphone
+
+                printf '%s\t%s\t%s\t%s\n' "$empid" "$empname" "$empcity" "$empphone" >> "$filename"
+
+                echo "Record inserted successfully."
+            fi
+        else
+            echo "Create the address book first."
+        fi
+        ;;
+
+    4)
+        echo "Enter employee ID to delete:"
+        read -r empid
+
+        if awk -F '\t' -v id="$empid" '$1 == id {found=1} END {exit !found}' "$filename"; then
+            awk -F '\t' -v id="$empid" '$1 != id' "$filename" > temp.txt
+            mv temp.txt "$filename"
+            echo "Record deleted successfully."
+        else
+            echo "Record not found."
+        fi
+        ;;
+
+    5)
+        echo "Enter employee ID to modify:"
+        read -r empid
+
+        if awk -F '\t' -v id="$empid" '$1 == id {found=1} END {exit !found}' "$filename"; then
+            echo "Enter new employee name:"
+            read -r empname
+
+            echo "Enter new employee city:"
+            read -r empcity
+
+            echo "Enter new employee phone:"
+            read -r empphone
+
+            awk -F '\t' -v id="$empid" '$1 != id' "$filename" > temp.txt
+
+            printf '%s\t%s\t%s\t%s\n' "$empid" "$empname" "$empcity" "$empphone" >> temp.txt
+
+            mv temp.txt "$filename"
+            echo "Record modified successfully."
+        else
+            echo "Record not found."
+        fi
+        ;;
+
+    6)
+        echo "Exiting Address Book."
+        exit 0
+        ;;
+
+    *)
+        echo "Invalid choice."
+        ;;
+
+    esac
+done
